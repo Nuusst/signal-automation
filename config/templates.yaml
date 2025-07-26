@@ -1,0 +1,38 @@
+templates:
+  new_order_owner:
+    format: |
+      💸 New order alert!
+      🕓 Time: {time}
+      📅 Date: {date}
+      💰 Total: {total}
+      🙍‍♂️ Client: {client}
+      🌍 IP: {ip}
+  
+  new_affiliate_owner:
+    format: |
+      🙍‍♂️ New affiliate alert!
+      🕓 Time: {time}
+      📅 Date: {date}
+      📞 Phone number: {phone}
+      🗝️ Affiliate token: {token}
+  
+  affiliate_registration_success:
+    format: "Inscription confirmée - Votre lien affilié: {link}?{token}"
+  
+  affiliate_already_registered:
+    format: "Vous êtes déjà enregistré - Votre lien affilié: {link}?{token}"
+  
+  new_order_affiliate:
+    format: |
+      💸 Nouvelle commande !
+      🕓 Heure: {time}
+      📅 Date: {date}
+      💰 Total: {total}
+      🙍‍♂️ Client: {client}
+      🌍 IP: {ip}
+  
+  system_alert:
+    format: "🚨 SYSTEM ALERT: {message}"
+  
+  webhook_alert:
+    format: "⚠️ WEBHOOK ALERT: {message}"
