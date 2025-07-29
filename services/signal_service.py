@@ -57,8 +57,9 @@ class SignalService:
             cmd = [
                 'signal-cli',
                 '-a', self.signal_number,
-                'receive',
-                '--output=json'
+                '--output=json',
+                'receive'
+                
             ]
             
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)

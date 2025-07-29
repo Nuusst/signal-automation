@@ -5,6 +5,7 @@ from typing import List, Optional, Dict
 from config.settings import settings
 from models.affiliate import Affiliate
 from models.order import Order
+from typing import List, Optional, Dict, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -17,16 +18,15 @@ class DatabaseService:
         """Create database connection pool"""
         try:
             pool_config = {
-                'pool_name': 'signal_automation_pool',
-                'pool_size': settings.DB_POOL_SIZE,
-                'pool_reset_session': True,
-                'host': settings.DB_HOST,
-                'database': settings.DB_NAME,
-                'user': settings.DB_USER,
-                'password': settings.DB_PASSWORD,
-                'autocommit': False,
-                'pool_timeout': settings.DB_POOL_TIMEOUT,
-                'max_overflow': settings.DB_POOL_MAX_OVERFLOW
+            'pool_name': 'signal_automation_pool',
+            'pool_size': settings.DB_POOL_SIZE,
+            'pool_reset_session': True,
+            'host': settings.DB_HOST,
+            'database': settings.DB_NAME,
+            'user': settings.DB_USER,
+            'password': settings.DB_PASSWORD,
+            'autocommit': settings.DB_AUTOCOMMIT,
+            'connection_timeout': settings.DB_CONNECTION_TIMEOUT,
             }
             
             self.pool = pooling.MySQLConnectionPool(**pool_config)
@@ -177,6 +177,82 @@ class DatabaseService:
             
         except Error as e:
             logger.error(f"Error marking order as notified: {e}")
+            if connection:
+                connection.rollback()
+            return False
+        finally:
+            if connection:
+                connection.close()
+    
+    def save_api_key(self, key: str) -> Optional[int]:
+        """Save API key and return ID"""
+        connection = None
+        try:
+            connection = self.get_connection()
+            cursor = connection.cursor()
+            
+            query = "INSERT INTO api_keys (`key`) VALUES (%s)"
+            cursor.execute(query, (key,))
+            
+            api_key_id = cursor.lastrowid
+            connection.commit()
+            cursor.close()
+            
+            logger.info(f"Saved API key with ID: {api_key_id}")
+            return api_key_id
+            
+        except Error as e:
+            logger.error(f"Error saving API key: {e}")
+            if connection:
+                connection.rollback()
+            return None
+        finally:
+            if connection:
+                connection.close()
+    
+    def save_merchant_code(self, api_key_id: int, merchant_code: str) -> bool:
+        """Save merchant code for API key"""
+        connection = None
+        try:
+            connection = self.get_connection()
+            cursor = connection.cursor()
+            
+            query = "UPDATE api_keys SET merchant_code = %s WHERE id = %s"
+            cursor.execute(query, (merchant_code, api_key_id))
+            
+            connection.commit()
+            cursor.close()
+            
+            logger.info(f"Saved merchant code for API key ID: {api_key_id}")
+            return True
+            
+        except Error as e:
+            logger.error(f"Error saving merchant code: {e}")
+            if connection:
+                connection.rollback()
+            return False
+        finally:
+            if connection:
+                connection.close()
+    
+    def save_token(self, api_key_id: int, token: str) -> bool:
+        """Save token for API key"""
+        connection = None
+        try:
+            connection = self.get_connection()
+            cursor = connection.cursor()
+            
+            query = "UPDATE api_keys SET code = %s WHERE id = %s"
+            cursor.execute(query, (token, api_key_id))
+            
+            connection.commit()
+            cursor.close()
+            
+            logger.info(f"Saved token for API key ID: {api_key_id}")
+            return True
+            
+        except Error as e:
+            logger.error(f"Error saving token: {e}")
             if connection:
                 connection.rollback()
             return False
